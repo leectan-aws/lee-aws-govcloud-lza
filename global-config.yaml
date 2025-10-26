@@ -2,7 +2,7 @@ homeRegion: &HOME_REGION us-gov-east-1
 enabledRegions:
   - us-gov-east-1
   - us-gov-west-1
-managementAccountAccessRole: AWSControlTowerExecution
+managementAccountAccessRole: OrganizationAccountAccessRole
 # Event bus policy removed for simplicity
 cloudwatchLogRetentionInDays: 3653
 terminationProtection: true
