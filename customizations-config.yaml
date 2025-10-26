@@ -1,1 +1,7 @@
+# Minimal customizations config for GovCloud (no-op placeholders)
+applications: []
+stacks: []
+stackSets: []
+serviceCatalog:
+  portfolios: []
 404: Not Found
