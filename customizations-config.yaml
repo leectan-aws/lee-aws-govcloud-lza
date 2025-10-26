@@ -1,0 +1,17 @@
+#
+# AWS Landing Zone Accelerator - Customizations Configuration
+# Custom CloudFormation stacks and applications
+#
+
+# Custom application stacks (CloudFormation)
+applications: []
+
+# Firewall instances
+firewalls: []
+
+# CloudFormation stacks
+cloudFormationStacks: []
+
+# CloudFormation StackSets
+cloudFormationStackSets: []
+
