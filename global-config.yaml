@@ -1,0 +1,210 @@
+#
+# AWS Landing Zone Accelerator - Global Configuration
+# Primary Region: us-gov-east-1
+# DR Region: us-gov-west-1
+# Compliance: FedRAMP, NIST 800-53, DoD IL4
+#
+
+homeRegion: us-gov-east-1
+enabledRegions:
+  - us-gov-east-1  # Primary
+  - us-gov-west-1  # DR
+
+managementAccountAccessRole: AWSControlTowerExecution
+
+# CloudWatch Logs retention and encryption
+cloudwatchLogRetentionInDays: 365  # 1 year for operations logs
+
+# Centralized logging configuration
+logging:
+  account: LogArchive
+  
+  # CloudTrail - Organization-wide audit trail
+  cloudtrail:
+    enable: true
+    organizationTrail: true
+    organizationTrailSettings:
+      multiRegionTrail: true
+      globalServiceEvents: true
+      managementEvents: true
+      s3DataEvents: true
+      lambdaDataEvents: true
+      sendToCloudWatchLogs: true
+      apiErrorRateInsight: true
+      apiCallRateInsight: true
+    accountTrails: []
+    lifecycleRules:
+      - enabled: true
+        id: CloudTrailLogArchive
+        abortIncompleteMultipartUpload: 7
+        expiration: 2555  # 7 years for FedRAMP compliance
+        transitions:
+          - storageClass: GLACIER
+            transitionAfter: 365  # Move to Glacier after 1 year
+          - storageClass: DEEP_ARCHIVE
+            transitionAfter: 1825  # Move to Deep Archive after 5 years
+        noncurrentVersionExpiration: 2555
+  
+  # Session Manager logging
+  sessionManager:
+    sendToCloudWatchLogs: true
+    sendToS3: true
+    lifecycleRules:
+      - enabled: true
+        id: SessionManagerLogArchive
+        abortIncompleteMultipartUpload: 7
+        expiration: 2555
+        transitions:
+          - storageClass: GLACIER
+            transitionAfter: 365
+  
+  # CloudWatch Logs - Central log destination
+  cloudwatchLogs:
+    enable: true
+    dynamicPartitioning: dynamic-partitioning/log-filters.json
+    exclusions: []
+  
+  # Access logging
+  accessLogBucket:
+    enable: true
+    deploymentTargets:
+      organizationalUnits:
+        - Root
+    lifecycleRules:
+      - enabled: true
+        id: AccessLogArchive
+        abortIncompleteMultipartUpload: 7
+        expiration: 2555
+        transitions:
+          - storageClass: GLACIER
+            transitionAfter: 365
+  
+  # Central logs bucket
+  centralLogBucket:
+    enable: true
+    lifecycleRules:
+      - enabled: true
+        id: CentralLogArchive
+        abortIncompleteMultipartUpload: 7
+        expiration: 2555
+        transitions:
+          - storageClass: GLACIER
+            transitionAfter: 90
+          - storageClass: DEEP_ARCHIVE
+            transitionAfter: 365
+    s3ResourcePolicyAttachments:
+      - policy: s3-policies/central-logs-bucket.json
+
+# Cost and Usage Reports
+reports:
+  costAndUsageReport:
+    compression: Parquet
+    format: Parquet
+    reportName: accelerator-cur
+    s3Prefix: cur
+    timeUnit: DAILY
+    refreshClosedReports: true
+    reportVersioning: OVERWRITE_REPORT
+    additionalArtifacts:
+      - ATHENA
+  
+  # Budgets for cost control
+  budgets:
+    - name: accel-budget-total
+      amount: 10000  # $10,000/month total budget
+      timeUnit: MONTHLY
+      type: COST
+      includeUpfront: true
+      includeCredit: true
+      includeDiscount: true
+      includeRefund: true
+      includeRecurring: true
+      includeSupport: true
+      includeTax: true
+      includeOtherSubscription: true
+      includeSubscription: true
+      useAmortized: false
+      useBlended: false
+      unit: USD
+      notifications:
+        - type: ACTUAL
+          thresholdType: PERCENTAGE
+          threshold: 80
+          comparisonOperator: GREATER_THAN
+          subscriptionType: EMAIL
+          address: leectan+govcloud@amazon.com
+        - type: ACTUAL
+          thresholdType: PERCENTAGE
+          threshold: 100
+          comparisonOperator: GREATER_THAN
+          subscriptionType: EMAIL
+          address: leectan+govcloud@amazon.com
+
+# Backup configuration
+backup:
+  vaults:
+    - name: BackupVault
+      deploymentTargets:
+        organizationalUnits:
+          - Root
+
+# SNS Topics for notifications
+snsTopics:
+  deploymentTargets:
+    organizationalUnits:
+      - Root
+  topics:
+    - name: Security-High
+      emailAddresses:
+        - leectan+govcloud@amazon.com
+    - name: Security-Medium
+      emailAddresses:
+        - leectan+govcloud@amazon.com
+    - name: Operations
+      emailAddresses:
+        - leectan+govcloud@amazon.com
+
+# SSM Inventory
+ssmInventory:
+  enable: true
+  deploymentTargets:
+    organizationalUnits:
+      - Root
+
+# SSM Parameters (for cross-account resource sharing)
+ssmParameters:
+  - deploymentTargets:
+      organizationalUnits:
+        - Root
+    parameters:
+      - name: /accelerator/kms/central-logs-key-arn
+        path: /accelerator/kms/central-logs-key-arn
+        value: '{{resolve:ssm:/accelerator/kms/central-logs-key-arn}}'
+      - name: /accelerator/network/home-region
+        path: /accelerator/network/home-region
+        value: us-gov-east-1
+
+# Control Tower (not available in GovCloud - keeping for compatibility)
+controlTower:
+  enable: false
+
+# CDK options
+cdkOptions:
+  centralizeBuckets: true
+  useManagementAccessRole: true
+  forceBootstrap: false
+  customDeploymentRole: AWSControlTowerExecution
+
+# Tagging strategy
+tags:
+  - key: Environment
+    value: Production
+  - key: ManagedBy
+    value: LZA
+  - key: Compliance
+    value: FedRAMP-High
+  - key: DataClassification
+    value: Sensitive
+  - key: CostCenter
+    value: Infrastructure
+
