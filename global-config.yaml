@@ -61,7 +61,8 @@ logging:
     attachPolicyToIamRoles:
       - EC2-Default-SSM-AD-Role
   cloudwatchLogs:
-    dynamicPartitioning: dynamic-partitioning/log-filters.json
+    # dynamic partitioning is not supported in GovCloud
+    # dynamicPartitioning: dynamic-partitioning/log-filters.json
     dataProtection: 
       managedDataIdentifiers:
         categories:
@@ -90,8 +91,9 @@ logging:
         noncurrentVersionTransitions:
           - storageClass: GLACIER_IR
             transitionAfter: 365
-    s3ResourcePolicyAttachments:
-      - policy: bucket-policies/central-log-bucket.json
+    # s3ResourcePolicyAttachments disabled for initial prepare pass in GovCloud; re-enable later
+    # s3ResourcePolicyAttachments:
+    #   - policy: bucket-policies/central-log-bucket.json
   elbLogBucket:
     lifecycleRules:
       - enabled: true
@@ -144,31 +146,31 @@ reports:
           threshold: 100
           comparisonOperator: GREATER_THAN
           subscriptionType: EMAIL
-          address: <budget-notifications>@example.com  <----- UPDATE EMAIL ADDRESS
+          address: leectan+govcloud@amazon.com
         - type: ACTUAL
           thresholdType: PERCENTAGE
           threshold: 90
           comparisonOperator: GREATER_THAN
           subscriptionType: EMAIL
-          address: <budget-notifications>@example.com  <----- UPDATE EMAIL ADDRESS
+          address: leectan+govcloud@amazon.com
         - type: ACTUAL
           thresholdType: PERCENTAGE
           threshold: 80
           comparisonOperator: GREATER_THAN
           subscriptionType: EMAIL
-          address: <budget-notifications>@example.com  <----- UPDATE EMAIL ADDRESS
+          address: leectan+govcloud@amazon.com
         - type: ACTUAL
           thresholdType: PERCENTAGE
           threshold: 75
           comparisonOperator: GREATER_THAN
           subscriptionType: EMAIL
-          address: <budget-notifications>@example.com  <----- UPDATE EMAIL ADDRESS
+          address: leectan+govcloud@amazon.com
         - type: ACTUAL
           thresholdType: PERCENTAGE
           threshold: 50
           comparisonOperator: GREATER_THAN
           subscriptionType: EMAIL
-          address: <budget-notifications>@example.com  <----- UPDATE EMAIL ADDRESS
+          address: leectan+govcloud@amazon.com
 backup:
   vaults:
     - name: BackupVault
