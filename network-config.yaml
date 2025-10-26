@@ -19,7 +19,7 @@ defaultVpc:
 #####################################
 transitGateways:
   - name: Network-Main
-    account: Network
+    account: Security
     region: *HOME_REGION
     shareTargets:
       organizationalUnits:
@@ -58,7 +58,7 @@ endpointPolicies:
 #####################################
 vpcs:
   - name: Network-Endpoints
-    account: Network
+    account: Security
     region: *HOME_REGION
     cidrs:
       - 10.1.0.0/22
@@ -145,7 +145,7 @@ vpcs:
         - service: kms
         - service: logs
   - name: Network-Inspection
-    account: Network
+    account: Security
     region: *HOME_REGION
     cidrs:
       - 10.2.0.0/22
@@ -226,7 +226,7 @@ vpcs:
         - service: dynamodb
     useCentralEndpoints: true
   - name: SharedServices-Main
-    account: SharedServices
+    account: Security
     region: *HOME_REGION
     cidrs:
       - 10.4.0.0/16
