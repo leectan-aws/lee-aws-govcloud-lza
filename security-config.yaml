@@ -1,0 +1,447 @@
+#
+# AWS Landing Zone Accelerator - Security Configuration  
+# Comprehensive security services deployment
+# Compliance: FedRAMP High, NIST 800-53, DoD IL4
+#
+
+homeRegion: us-gov-east-1
+
+# Central security services account
+centralSecurityServices:
+  delegatedAdminAccount: Audit
+  
+  # Amazon Macie - Sensitive data discovery
+  macie:
+    enable: true
+    excludeRegions: []
+    policyFindingsPublishingFrequency: FIFTEEN_MINUTES
+    publishSensitiveDataFindings: true
+  
+  # Amazon GuardDuty - Threat detection
+  guardduty:
+    enable: true
+    excludeRegions: []
+    s3Protection:
+      enable: true
+      excludeRegions: []
+    eksProtection:
+      enable: true
+      excludeRegions: []
+    exportConfiguration:
+      enable: true
+      destinationType: S3
+      exportFrequency: FIFTEEN_MINUTES
+    lifecycleRules:
+      - enabled: true
+        id: GuardDutyFindings
+        abortIncompleteMultipartUpload: 7
+        expiration: 2555
+        transitions:
+          - storageClass: GLACIER
+            transitionAfter: 90
+  
+  # AWS Security Hub - Centralized security findings
+  securityHub:
+    enable: true
+    excludeRegions: []
+    standards:
+      - name: AWS Foundational Security Best Practices v1.0.0
+        enable: true
+        controlsToDisable: []
+      
+      - name: CIS AWS Foundations Benchmark v1.4.0
+        enable: true
+        controlsToDisable:
+          # Disable controls that conflict with organizational policies
+          - CIS.1.12  # Root MFA (handled separately)
+          - CIS.1.20  # IAM password policy (handled via SSO)
+      
+      # PCI DSS (if handling payment data)
+      - name: PCI DSS v3.2.1
+        enable: false  # Enable if needed
+      
+      # NIST 800-53 compliance
+      - name: NIST Special Publication 800-53 Revision 5
+        enable: true
+        controlsToDisable: []
+  
+  # Amazon Detective - Security investigation
+  detective:
+    enable: false  # Verify GovCloud availability
+    excludeRegions: []
+  
+  # AWS Audit Manager - Compliance automation
+  auditManager:
+    enable: false  # Verify GovCloud availability
+    excludeRegions: []
+    defaultReportsConfiguration:
+      enable: false
+
+# Access Analyzer - IAM access analysis
+accessAnalyzer:
+  enable: true
+
+# IAM Password Policy
+iamPasswordPolicy:
+  allowUsersToChangePassword: true
+  hardExpiry: false
+  requireUppercaseCharacters: true
+  requireLowercaseCharacters: true
+  requireSymbols: true
+  requireNumbers: true
+  minimumPasswordLength: 14
+  passwordReusePrevention: 24
+  maxPasswordAge: 90
+
+# AWS Config - Resource compliance monitoring
+awsConfig:
+  enableConfigurationRecorder: true
+  enableDeliveryChannel: true
+  ruleSets:
+    # Operational best practices - FedRAMP High
+    - deploymentTargets:
+        organizationalUnits:
+          - Root
+      rules:
+        # CloudTrail rules
+        - name: cloud-trail-cloud-watch-logs-enabled
+        - name: cloud-trail-enabled
+        - name: cloud-trail-encryption-enabled
+        - name: cloud-trail-log-file-validation-enabled
+        - name: cloudtrail-security-trail-enabled
+        - name: multi-region-cloudtrail-enabled
+        
+        # S3 rules
+        - name: s3-bucket-public-read-prohibited
+        - name: s3-bucket-public-write-prohibited
+        - name: s3-bucket-server-side-encryption-enabled
+        - name: s3-bucket-ssl-requests-only
+        - name: s3-bucket-logging-enabled
+        - name: s3-bucket-versioning-enabled
+        - name: s3-default-encryption-kms
+        - name: s3-bucket-level-public-access-prohibited
+        
+        # IAM rules
+        - name: iam-root-access-key-check
+        - name: iam-user-mfa-enabled
+        - name: mfa-enabled-for-iam-console-access
+        - name: iam-password-policy
+        - name: iam-user-unused-credentials-check
+          inputParameters:
+            maxCredentialUsageAge: '90'
+        - name: iam-policy-no-statements-with-admin-access
+        - name: iam-user-no-policies-check
+        
+        # EC2 rules
+        - name: encrypted-volumes
+        - name: ec2-ebs-encryption-by-default
+        - name: ec2-instance-managed-by-systems-manager
+        - name: ec2-instance-no-public-ip
+        - name: ec2-managedinstance-association-compliance-status-check
+        - name: ec2-volume-inuse-check
+        
+        # VPC rules
+        - name: vpc-default-security-group-closed
+        - name: vpc-flow-logs-enabled
+        - name: vpc-sg-open-only-to-authorized-ports
+        - name: restricted-ssh
+        - name: restricted-common-ports
+        
+        # GuardDuty rules
+        - name: guardduty-enabled-centralized
+        
+        # SecurityHub rules
+        - name: securityhub-enabled
+        
+        # RDS rules
+        - name: rds-instance-public-access-check
+        - name: rds-logging-enabled
+        - name: rds-storage-encrypted
+        - name: rds-snapshots-public-prohibited
+        - name: rds-snapshot-encrypted
+        
+        # Lambda rules
+        - name: lambda-function-public-access-prohibited
+        - name: lambda-inside-vpc
+        - name: lambda-concurrency-check
+        
+        # ELB rules
+        - name: elb-logging-enabled
+        - name: alb-http-to-https-redirection-check
+        
+        # KMS rules
+        - name: cmk-backing-key-rotation-enabled
+        - name: kms-cmk-not-scheduled-for-deletion
+        
+        # Additional FedRAMP rules
+        - name: cloudwatch-alarm-action-check
+        - name: cloudwatch-log-group-encrypted
+        - name: cw-loggroup-retention-period-check
+        - name: dynamodb-table-encrypted-kms
+        - name: ebs-snapshot-public-restorable-check
+        - name: efs-encrypted-check
+        - name: elasticsearch-encrypted-at-rest
+        - name: elasticsearch-in-vpc-only
+        - name: emr-kerberos-enabled
+        - name: incoming-ssh-disabled
+        - name: internet-gateway-authorized-vpc-only
+        - name: redshift-cluster-configuration-check
+        - name: redshift-cluster-maintenancesettings-check
+        - name: redshift-cluster-public-access-check
+        - name: s3-account-level-public-access-blocks
+        - name: sns-encrypted-kms
+        - name: sqs-queue-encrypted
+        
+# CloudWatch - Metric filters and alarms for security events
+cloudWatch:
+  metricSets:
+    - regions:
+        - us-gov-east-1
+        - us-gov-west-1
+      deploymentTargets:
+        organizationalUnits:
+          - Root
+      metrics:
+        # CIS AWS Foundations Benchmark metrics
+        - filterName: UnauthorizedAPICalls
+          logGroupName: /aws/cloudtrail/organizational-trail
+          filterPattern: '{ ($.errorCode = "*UnauthorizedOperation") || ($.errorCode = "AccessDenied*") }'
+          metricNamespace: CloudTrailMetrics
+          metricName: UnauthorizedAPICalls
+          metricValue: '1'
+        
+        - filterName: RootAccountUsage
+          logGroupName: /aws/cloudtrail/organizational-trail
+          filterPattern: '{ $.userIdentity.type = "Root" && $.userIdentity.invokedBy NOT EXISTS && $.eventType != "AwsServiceEvent" }'
+          metricNamespace: CloudTrailMetrics
+          metricName: RootAccountUsage
+          metricValue: '1'
+        
+        - filterName: IAMPolicyChanges
+          logGroupName: /aws/cloudtrail/organizational-trail
+          filterPattern: '{($.eventName=DeleteGroupPolicy)||($.eventName=DeleteRolePolicy)||($.eventName=DeleteUserPolicy)||($.eventName=PutGroupPolicy)||($.eventName=PutRolePolicy)||($.eventName=PutUserPolicy)||($.eventName=CreatePolicy)||($.eventName=DeletePolicy)||($.eventName=CreatePolicyVersion)||($.eventName=DeletePolicyVersion)||($.eventName=AttachRolePolicy)||($.eventName=DetachRolePolicy)||($.eventName=AttachUserPolicy)||($.eventName=DetachUserPolicy)||($.eventName=AttachGroupPolicy)||($.eventName=DetachGroupPolicy)}'
+          metricNamespace: CloudTrailMetrics
+          metricName: IAMPolicyChanges
+          metricValue: '1'
+        
+        - filterName: NetworkACLChanges
+          logGroupName: /aws/cloudtrail/organizational-trail
+          filterPattern: '{ ($.eventName = CreateNetworkAcl) || ($.eventName = CreateNetworkAclEntry) || ($.eventName = DeleteNetworkAcl) || ($.eventName = DeleteNetworkAclEntry) || ($.eventName = ReplaceNetworkAclEntry) || ($.eventName = ReplaceNetworkAclAssociation) }'
+          metricNamespace: CloudTrailMetrics
+          metricName: NetworkACLChanges
+          metricValue: '1'
+        
+        - filterName: SecurityGroupChanges
+          logGroupName: /aws/cloudtrail/organizational-trail
+          filterPattern: '{ ($.eventName = AuthorizeSecurityGroupIngress) || ($.eventName = AuthorizeSecurityGroupEgress) || ($.eventName = RevokeSecurityGroupIngress) || ($.eventName = RevokeSecurityGroupEgress) || ($.eventName = CreateSecurityGroup) || ($.eventName = DeleteSecurityGroup) }'
+          metricNamespace: CloudTrailMetrics
+          metricName: SecurityGroupChanges
+          metricValue: '1'
+        
+        - filterName: VPCChanges
+          logGroupName: /aws/cloudtrail/organizational-trail
+          filterPattern: '{ ($.eventName = CreateVpc) || ($.eventName = DeleteVpc) || ($.eventName = ModifyVpcAttribute) || ($.eventName = AcceptVpcPeeringConnection) || ($.eventName = CreateVpcPeeringConnection) || ($.eventName = DeleteVpcPeeringConnection) || ($.eventName = RejectVpcPeeringConnection) || ($.eventName = AttachClassicLinkVpc) || ($.eventName = DetachClassicLinkVpc) || ($.eventName = DisableVpcClassicLink) || ($.eventName = EnableVpcClassicLink) }'
+          metricNamespace: CloudTrailMetrics
+          metricName: VPCChanges
+          metricValue: '1'
+        
+        - filterName: ConsoleSignInFailures
+          logGroupName: /aws/cloudtrail/organizational-trail
+          filterPattern: '{ ($.eventName = ConsoleLogin) && ($.errorMessage = "Failed authentication") }'
+          metricNamespace: CloudTrailMetrics
+          metricName: ConsoleSignInFailures
+          metricValue: '1'
+        
+        - filterName: DisableOrDeleteCMK
+          logGroupName: /aws/cloudtrail/organizational-trail
+          filterPattern: '{($.eventSource = kms.amazonaws.com) && (($.eventName=DisableKey)||($.eventName=ScheduleKeyDeletion)) }'
+          metricNamespace: CloudTrailMetrics
+          metricName: DisableOrDeleteCMK
+          metricValue: '1'
+        
+        - filterName: S3BucketPolicyChanges
+          logGroupName: /aws/cloudtrail/organizational-trail
+          filterPattern: '{ ($.eventSource = s3.amazonaws.com) && (($.eventName = PutBucketAcl) || ($.eventName = PutBucketPolicy) || ($.eventName = PutBucketCors) || ($.eventName = PutBucketLifecycle) || ($.eventName = PutBucketReplication) || ($.eventName = DeleteBucketPolicy) || ($.eventName = DeleteBucketCors) || ($.eventName = DeleteBucketLifecycle) || ($.eventName = DeleteBucketReplication)) }'
+          metricNamespace: CloudTrailMetrics
+          metricName: S3BucketPolicyChanges
+          metricValue: '1'
+  
+  alarmSets:
+    - regions:
+        - us-gov-east-1
+      deploymentTargets:
+        organizationalUnits:
+          - Root
+      alarms:
+        # Critical security alarms
+        - alarmName: CIS-UnauthorizedAPICalls
+          alarmDescription: Alarm for unauthorized API calls
+          snsTopicName: Security-High
+          metricName: UnauthorizedAPICalls
+          namespace: CloudTrailMetrics
+          comparisonOperator: GreaterThanOrEqualToThreshold
+          evaluationPeriods: 1
+          period: 300
+          statistic: Sum
+          threshold: 1
+          treatMissingData: notBreaching
+        
+        - alarmName: CIS-RootAccountUsage
+          alarmDescription: Alarm for root account usage
+          snsTopicName: Security-High
+          metricName: RootAccountUsage
+          namespace: CloudTrailMetrics
+          comparisonOperator: GreaterThanOrEqualToThreshold
+          evaluationPeriods: 1
+          period: 300
+          statistic: Sum
+          threshold: 1
+          treatMissingData: notBreaching
+        
+        - alarmName: CIS-IAMPolicyChanges
+          alarmDescription: Alarm for IAM policy changes
+          snsTopicName: Security-Medium
+          metricName: IAMPolicyChanges
+          namespace: CloudTrailMetrics
+          comparisonOperator: GreaterThanOrEqualToThreshold
+          evaluationPeriods: 1
+          period: 300
+          statistic: Sum
+          threshold: 1
+          treatMissingData: notBreaching
+        
+        - alarmName: CIS-NetworkACLChanges
+          alarmDescription: Alarm for network ACL changes
+          snsTopicName: Security-Medium
+          metricName: NetworkACLChanges
+          namespace: CloudTrailMetrics
+          comparisonOperator: GreaterThanOrEqualToThreshold
+          evaluationPeriods: 1
+          period: 300
+          statistic: Sum
+          threshold: 1
+          treatMissingData: notBreaching
+        
+        - alarmName: CIS-SecurityGroupChanges
+          alarmDescription: Alarm for security group changes
+          snsTopicName: Security-Medium
+          metricName: SecurityGroupChanges
+          namespace: CloudTrailMetrics
+          comparisonOperator: GreaterThanOrEqualToThreshold
+          evaluationPeriods: 1
+          period: 300
+          statistic: Sum
+          threshold: 1
+          treatMissingData: notBreaching
+        
+        - alarmName: CIS-VPCChanges
+          alarmDescription: Alarm for VPC changes
+          snsTopicName: Security-Medium
+          metricName: VPCChanges
+          namespace: CloudTrailMetrics
+          comparisonOperator: GreaterThanOrEqualToThreshold
+          evaluationPeriods: 1
+          period: 300
+          statistic: Sum
+          threshold: 1
+          treatMissingData: notBreaching
+        
+        - alarmName: CIS-ConsoleSignInFailures
+          alarmDescription: Alarm for console sign-in failures
+          snsTopicName: Security-High
+          metricName: ConsoleSignInFailures
+          namespace: CloudTrailMetrics
+          comparisonOperator: GreaterThanOrEqualToThreshold
+          evaluationPeriods: 1
+          period: 300
+          statistic: Sum
+          threshold: 5
+          treatMissingData: notBreaching
+        
+        - alarmName: CIS-DisableOrDeleteCMK
+          alarmDescription: Alarm for CMK disable or deletion
+          snsTopicName: Security-High
+          metricName: DisableOrDeleteCMK
+          namespace: CloudTrailMetrics
+          comparisonOperator: GreaterThanOrEqualToThreshold
+          evaluationPeriods: 1
+          period: 300
+          statistic: Sum
+          threshold: 1
+          treatMissingData: notBreaching
+        
+        - alarmName: CIS-S3BucketPolicyChanges
+          alarmDescription: Alarm for S3 bucket policy changes
+          snsTopicName: Security-Medium
+          metricName: S3BucketPolicyChanges
+          namespace: CloudTrailMetrics
+          comparisonOperator: GreaterThanOrEqualToThreshold
+          evaluationPeriods: 1
+          period: 300
+          statistic: Sum
+          threshold: 1
+          treatMissingData: notBreaching
+
+# KMS encryption keys
+keyManagementService:
+  keySets:
+    - deploymentTargets:
+        organizationalUnits:
+          - Root
+      keys:
+        - name: Central-Logs-Key
+          description: KMS key for encrypting central logs
+          enabled: true
+          enableKeyRotation: true
+          removalPolicy: retain
+          alias: alias/accelerator/central-logs-key
+          policy: kms-policies/central-logs-key.json
+        
+        - name: CloudTrail-Key
+          description: KMS key for CloudTrail logs
+          enabled: true
+          enableKeyRotation: true
+          removalPolicy: retain
+          alias: alias/accelerator/cloudtrail-key
+          policy: kms-policies/cloudtrail-key.json
+        
+        - name: Lambda-Key
+          description: KMS key for Lambda environment variables
+          enabled: true
+          enableKeyRotation: true
+          removalPolicy: retain
+          alias: alias/accelerator/lambda-key
+          policy: kms-policies/lambda-key.json
+        
+        - name: EBS-Key
+          description: KMS key for EBS volume encryption
+          enabled: true
+          enableKeyRotation: true
+          removalPolicy: retain
+          alias: alias/accelerator/ebs-key
+          policy: kms-policies/ebs-key.json
+        
+        - name: S3-Key
+          description: KMS key for S3 encryption
+          enabled: true
+          enableKeyRotation: true
+          removalPolicy: retain
+          alias: alias/accelerator/s3-key
+          policy: kms-policies/s3-key.json
+        
+        - name: RDS-Key
+          description: KMS key for RDS encryption
+          enabled: true
+          enableKeyRotation: true
+          removalPolicy: retain
+          alias: alias/accelerator/rds-key
+          policy: kms-policies/rds-key.json
+        
+        - name: SecretsManager-Key
+          description: KMS key for Secrets Manager
+          enabled: true
+          enableKeyRotation: true
+          removalPolicy: retain
+          alias: alias/accelerator/secretsmanager-key
+          policy: kms-policies/secretsmanager-key.json
+
