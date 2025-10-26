@@ -1,102 +1,39 @@
-#
-# AWS Landing Zone Accelerator - IAM Configuration
-# Account: 435520283566
-# Least privilege access model
-#
-
-homeRegion: us-gov-east-1
-
-# Provider configuration for SAML federation (future)
-providers: []
-
-# Policy sets - reusable IAM policies
-policySets:
-  - deploymentTargets:
-      organizationalUnits:
-        - Root
-    policies:
-      # Read-only access policy
-      - name: ReadOnlyAccess
-        policy: iam-policies/read-only-access.json
-      
-      # Power user access (no IAM)
-      - name: PowerUserAccess
-        policy: iam-policies/power-user-access.json
-      
-      # Security audit access
-      - name: SecurityAuditAccess
-        policy: iam-policies/security-audit-access.json
-
-# Role sets - IAM roles
+policySets: []
 roleSets:
   - deploymentTargets:
       organizationalUnits:
         - Root
     roles:
-      # Break-glass emergency access role
-      - name: BreakGlassRole
+      - name: EC2-Default-SSM-AD-Role
+        instanceProfile: true
         assumedBy:
           - type: service
             principal: ec2.amazonaws.com
-          - type: account
-            principals:
-              - '435520283566'  # Management account
         policies:
           awsManaged:
-            - AdministratorAccess
-        tags:
-          - key: Purpose
-            value: EmergencyAccess
-      
-      # Security auditor role
-      - name: SecurityAuditor
+            - AmazonSSMManagedInstanceCore
+            - AmazonSSMDirectoryServiceAccess
+            - CloudWatchAgentServerPolicy
+      # This role is utilized by the Backup Plans defined in global-config.yaml
+      # We create this role in every account where we plan to have Backup Plans
+      # and Backup Vaults
+      - name: Backup-Role
         assumedBy:
-          - type: account
-            principals:
-              - '435520283566'
+          - type: service
+            principal: backup.amazonaws.com
         policies:
           awsManaged:
-            - SecurityAudit
-            - ReadOnlyAccess
-        boundaryPolicy: SecurityAuditBoundary
-      
-      # Operations role
-      - name: OperationsRole
+            - service-role/AWSBackupServiceRolePolicyForBackup
+            - service-role/AWSBackupServiceRolePolicyForRestores
+      # This role is utilized by the Budgets Config defined in global-config.yaml
+      # We create this role in every account where we plan to have AWS Budgets
+      # A service linked role is not available for AWS Budgets
+      - name: Budgets-Role
         assumedBy:
-          - type: account
-            principals:
-              - '435520283566'
+          - type: service
+            principal: budgets.amazonaws.com
         policies:
           awsManaged:
-            - job-function/SystemAdministrator
-        boundaryPolicy: OperationsBoundary
-
-# Group sets - IAM groups (for IAM users if needed)
-groupSets:
-  - deploymentTargets:
-      organizationalUnits:
-        - Root
-    groups:
-      # Administrators group
-      - name: Administrators
-        policies:
-          awsManaged:
-            - AdministratorAccess
-
-# User sets - IAM users (minimal, prefer SSO/federation)
-userSets:
-  - deploymentTargets:
-      organizationalUnits:
-        - Root
-    users:
-      # Break-glass emergency user
-      - username: breakglass
-        group: Administrators
-        boundaryPolicy: AdministratorAccess
-
-# Managed active directories (if using AWS Directory Service)
-managedActiveDirectories: []
-
-# Identity center (AWS SSO) - configure after initial deployment
-identityCenter: {}
-
+            - AWSBudgetsActionsWithAWSResourceControlAccess
+groupSets: []
+userSets: []
