@@ -1,0 +1,129 @@
+#
+# AWS Landing Zone Accelerator - Organization Configuration
+# Account: 435520283566
+# Structure: Security-focused OU design
+#
+
+enable: true
+
+# Organizational Units structure
+organizationalUnits:
+  - name: Security
+    # Contains: LogArchive, Audit, Security accounts
+    # Purpose: Isolated security and logging services
+  
+  # Future OUs for workload expansion
+  - name: Infrastructure
+    # Future: Network, shared services
+  
+  - name: Workloads
+    # Future: Dev, Staging, Prod accounts
+
+# Service Control Policies (SCPs)
+serviceControlPolicies:
+  # Deny leaving organization
+  - name: DenyLeaveOrganization
+    description: Prevent accounts from leaving the organization
+    policy: service-control-policies/deny-leave-organization.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Root
+  
+  # Deny modifying CloudTrail
+  - name: DenyModifyCloudTrail
+    description: Prevent modification or deletion of CloudTrail
+    policy: service-control-policies/deny-modify-cloudtrail.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Root
+  
+  # Deny disabling security services
+  - name: DenyDisableSecurityServices
+    description: Prevent disabling GuardDuty, SecurityHub, Config, Macie
+    policy: service-control-policies/deny-disable-security.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Root
+  
+  # Deny unencrypted S3 uploads
+  - name: DenyUnencryptedS3
+    description: Require encryption for all S3 uploads
+    policy: service-control-policies/deny-unencrypted-s3.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Root
+  
+  # Deny public S3 buckets
+  - name: DenyPublicS3Buckets
+    description: Prevent creation of public S3 buckets
+    policy: service-control-policies/deny-public-s3.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Root
+  
+  # Deny VPC modifications without approval
+  - name: DenyVPCModifications
+    description: Restrict VPC and network changes
+    policy: service-control-policies/deny-vpc-modifications.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Workloads
+        - Infrastructure
+  
+  # Require MFA for sensitive operations
+  - name: RequireMFA
+    description: Require MFA for IAM and sensitive operations
+    policy: service-control-policies/require-mfa.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Root
+  
+  # Deny root user access
+  - name: DenyRootUser
+    description: Deny root user access except for emergency break-glass
+    policy: service-control-policies/deny-root-user.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Workloads
+        - Infrastructure
+  
+  # Restrict regions to GovCloud only
+  - name: RestrictRegions
+    description: Restrict services to us-gov-east-1 and us-gov-west-1 only
+    policy: service-control-policies/restrict-regions.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Root
+
+# Tagging policies for governance
+taggingPolicies:
+  - name: RequiredTags
+    description: Require mandatory tags on all resources
+    policy: tagging-policies/required-tags.json
+    deploymentTargets:
+      organizationalUnits:
+        - Root
+
+# Backup policies
+backupPolicies:
+  - name: DailyBackup
+    description: Daily backups with 30-day retention
+    policy: backup-policies/daily-backup.json
+    deploymentTargets:
+      organizationalUnits:
+        - Workloads
+
+# Quarantine new accounts until configured
+quarantineNewAccounts:
+  enable: true
+  scpPolicyName: Quarantine
+
