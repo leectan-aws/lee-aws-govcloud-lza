@@ -61,7 +61,6 @@ logging:
   # CloudWatch Logs - Central log destination
   cloudwatchLogs:
     enable: true
-    dynamicPartitioning: dynamic-partitioning/log-filters.json
     exclusions: []
   
   # Access logging
@@ -92,8 +91,6 @@ logging:
             transitionAfter: 90
           - storageClass: DEEP_ARCHIVE
             transitionAfter: 365
-    s3ResourcePolicyAttachments:
-      - policy: s3-policies/central-logs-bucket.json
 
 # Cost and Usage Reports
 reports:
