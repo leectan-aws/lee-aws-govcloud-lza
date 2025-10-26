@@ -1,7 +1,6 @@
-# Minimal customizations config for GovCloud (no-op placeholders)
+# Minimal no-op customizations for initial bootstrap
 applications: []
 stacks: []
 stackSets: []
 serviceCatalog:
   portfolios: []
-404: Not Found
