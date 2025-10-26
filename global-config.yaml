@@ -174,9 +174,6 @@ ssmParameters:
       organizationalUnits:
         - Root
     parameters:
-      - name: /accelerator/kms/central-logs-key-arn
-        path: /accelerator/kms/central-logs-key-arn
-        value: '{{resolve:ssm:/accelerator/kms/central-logs-key-arn}}'
       - name: /accelerator/network/home-region
         path: /accelerator/network/home-region
         value: us-gov-east-1
