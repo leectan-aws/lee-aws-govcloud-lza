@@ -1,0 +1,47 @@
+#
+# AWS Landing Zone Accelerator - Accounts Configuration
+# Account: 435520283566
+# Primary Region: us-gov-east-1
+# DR Region: us-gov-west-1
+# Deployment: Production (4 accounts)
+#
+
+# Management account is automatically the account where LZA is deployed
+# Account ID: 435520283566
+# Email: leectan+govcloud@amazon.com
+
+# Mandatory accounts that LZA requires
+mandatoryAccounts:
+  # Log Archive - Centralized logging account
+  - name: LogArchive
+    description: Centralized logging account for compliance and audit
+    email: leectan+govcloud-logarchive@amazon.com
+    organizationalUnit: Security
+    
+  # Audit/Security - Security tooling and monitoring
+  - name: Audit
+    description: Security audit and monitoring account
+    email: leectan+govcloud-audit@amazon.com
+    organizationalUnit: Security
+
+# Additional accounts per user requirements
+workloadAccounts:
+  # Additional Security account as requested
+  - name: Security
+    description: Additional security services and tooling account
+    email: leectan+govcloud-security@amazon.com
+    organizationalUnit: Security
+
+# Account warming (optional but recommended for production)
+accountWarming:
+  enable: false  # Set to true if accounts hit EC2 launch limits
+
+# Account customizations
+customizations:
+  enableSnsSubscriptions: true
+  subscriptions:
+    - name: SecurityAlerts
+      subscriptionType: email
+      emails:
+        - leectan+govcloud@amazon.com
+
