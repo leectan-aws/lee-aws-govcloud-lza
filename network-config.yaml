@@ -1,0 +1,187 @@
+#
+# AWS Landing Zone Accelerator - Network Configuration
+# Primary: us-gov-east-1, DR: us-gov-west-1
+# Multi-region architecture
+#
+
+homeRegion: us-gov-east-1
+
+defaultVpc:
+  delete: true  # Delete default VPCs for security
+  excludeAccounts: []
+
+# VPCs
+vpcs:
+  # Management Account VPC - Primary Region
+  - name: Management-Primary-VPC
+    account: Management
+    region: us-gov-east-1
+    cidrs:
+      - 10.0.0.0/16
+    internetGateway: true
+    enableDnsHostnames: true
+    enableDnsSupport: true
+    instanceTenancy: default
+    
+    dhcpOptions: Management-DHCP
+    
+    subnets:
+      # Public subnets for NAT gateways, ALBs
+      - name: Management-Public-A
+        availabilityZone: a
+        routeTable: Management-Public
+        ipv4CidrBlock: 10.0.1.0/24
+        type: public
+      
+      - name: Management-Public-B
+        availabilityZone: b
+        routeTable: Management-Public
+        ipv4CidrBlock: 10.0.2.0/24
+        type: public
+      
+      # Private subnets for workloads
+      - name: Management-Private-A
+        availabilityZone: a
+        routeTable: Management-Private-A
+        ipv4CidrBlock: 10.0.10.0/24
+        type: private
+      
+      - name: Management-Private-B
+        availabilityZone: b
+        routeTable: Management-Private-B
+        ipv4CidrBlock: 10.0.11.0/24
+        type: private
+    
+    routeTables:
+      - name: Management-Public
+        routes:
+          - name: InternetGateway
+            destination: 0.0.0.0/0
+            type: internetGateway
+            target: IGW
+      
+      - name: Management-Private-A
+        routes:
+          - name: NatGateway
+            destination: 0.0.0.0/0
+            type: natGateway
+            target: Management-NAT-A
+      
+      - name: Management-Private-B
+        routes:
+          - name: NatGateway
+            destination: 0.0.0.0/0
+            type: natGateway
+            target: Management-NAT-B
+    
+    natGateways:
+      - name: Management-NAT-A
+        subnet: Management-Public-A
+      
+      - name: Management-NAT-B
+        subnet: Management-Public-B
+    
+    gatewayEndpoints:
+      defaultPolicy: Default
+      endpoints:
+        - service: s3
+        - service: dynamodb
+    
+    useCentralEndpoints: false
+    
+    vpcFlowLogs:
+      trafficType: ALL
+      maxAggregationInterval: 600
+      destinations:
+        - s3
+        - cloud-watch-logs
+      destinationsConfig:
+        - s3:
+            lifecycleRules:
+              - enabled: true
+                id: FlowLogArchive
+                abortIncompleteMultipartUpload: 7
+                expiration: 2555
+                transitions:
+                  - storageClass: GLACIER
+                    transitionAfter: 90
+
+  # Management Account VPC - DR Region
+  - name: Management-DR-VPC
+    account: Management
+    region: us-gov-west-1
+    cidrs:
+      - 10.1.0.0/16
+    internetGateway: true
+    enableDnsHostnames: true
+    enableDnsSupport: true
+    instanceTenancy: default
+    dhcpOptions: Management-DHCP
+    
+    subnets:
+      - name: Management-DR-Public-A
+        availabilityZone: a
+        routeTable: Management-DR-Public
+        ipv4CidrBlock: 10.1.1.0/24
+        type: public
+      
+      - name: Management-DR-Private-A
+        availabilityZone: a
+        routeTable: Management-DR-Private
+        ipv4CidrBlock: 10.1.10.0/24
+        type: private
+    
+    routeTables:
+      - name: Management-DR-Public
+        routes:
+          - name: InternetGateway
+            destination: 0.0.0.0/0
+            type: internetGateway
+            target: IGW
+      
+      - name: Management-DR-Private
+        routes:
+          - name: NatGateway
+            destination: 0.0.0.0/0
+            type: natGateway
+            target: Management-DR-NAT-A
+    
+    natGateways:
+      - name: Management-DR-NAT-A
+        subnet: Management-DR-Public-A
+    
+    gatewayEndpoints:
+      defaultPolicy: Default
+      endpoints:
+        - service: s3
+        - service: dynamodb
+    
+    vpcFlowLogs:
+      trafficType: ALL
+      maxAggregationInterval: 600
+      destinations:
+        - s3
+
+# DHCP Options
+dhcpOptions:
+  - name: Management-DHCP
+    accounts:
+      - Management
+    regions:
+      - us-gov-east-1
+      - us-gov-west-1
+    domainName: ec2.internal
+    domainNameServers:
+      - AmazonProvidedDNS
+
+# VPC endpoint policies
+endpointPolicies:
+  - name: Default
+    document: vpc-endpoint-policies/default.json
+
+# Network Firewall (if needed in future)
+# networkFirewall: {}
+
+# Route 53 Resolver
+# centralNetworkServices: {}
+
