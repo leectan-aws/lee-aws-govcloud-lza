@@ -11,8 +11,25 @@ mandatoryAccounts:
     description: The security audit account
     email: leectan+govcloud-audit@amazon.com
     organizationalUnit: Security
+accountIds:
+  - email: leectan+govcloud@amazon.com
+    accountId: 435520283566
+  - email: leectan+govcloud-logarchive@amazon.com
+    accountId: 111111111111
+  - email: leectan+govcloud-audit@amazon.com
+    accountId: 222222222222
+  # Defer LogArchive and Audit until accounts exist in GovCloud
+  # - name: LogArchive
+  #   description: The log archive account
+  #   email: leectan+govcloud-logarchive@amazon.com
+  #   organizationalUnit: Security
+  # - name: Audit
+  #   description: The security audit account
+  #   email: leectan+govcloud-audit@amazon.com
+  #   organizationalUnit: Security
 workloadAccounts:
-  - name: Security
-    description: Additional security services account
-    email: leectan+govcloud-security@amazon.com
-    organizationalUnit: Security
+  # Defer Security account until it exists
+  # - name: Security
+  #   description: Additional security services account
+  #   email: leectan+govcloud-security@amazon.com
+  #   organizationalUnit: Security
