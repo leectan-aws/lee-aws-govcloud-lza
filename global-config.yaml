@@ -91,9 +91,8 @@ logging:
         noncurrentVersionTransitions:
           - storageClass: GLACIER_IR
             transitionAfter: 365
-    # s3ResourcePolicyAttachments disabled for initial prepare pass in GovCloud; re-enable later
-    # s3ResourcePolicyAttachments:
-    #   - policy: bucket-policies/central-log-bucket.json
+    # Disable policy attachments during single-account bootstrap
+    s3ResourcePolicyAttachments: []
   elbLogBucket:
     lifecycleRules:
       - enabled: true
