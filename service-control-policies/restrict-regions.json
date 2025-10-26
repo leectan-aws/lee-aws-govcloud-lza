@@ -1,0 +1,48 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Deny",
+      "NotAction": [
+        "a4b:*",
+        "acm:*",
+        "aws-marketplace-management:*",
+        "aws-marketplace:*",
+        "aws-portal:*",
+        "budgets:*",
+        "ce:*",
+        "chime:*",
+        "cloudfront:*",
+        "cur:*",
+        "globalaccelerator:*",
+        "health:*",
+        "iam:*",
+        "importexport:*",
+        "kms:*",
+        "organizations:*",
+        "pricing:*",
+        "route53:*",
+        "route53domains:*",
+        "s3:GetAccountPublic*",
+        "s3:ListAllMyBuckets",
+        "s3:PutAccountPublic*",
+        "shield:*",
+        "sts:*",
+        "support:*",
+        "trustedadvisor:*",
+        "waf-regional:*",
+        "waf:*",
+        "wafv2:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": [
+            "us-gov-east-1",
+            "us-gov-west-1"
+          ]
+        }
+      }
+    }
+  ]
+}
