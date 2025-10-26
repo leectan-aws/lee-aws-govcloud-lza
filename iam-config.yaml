@@ -11,8 +11,8 @@ roleSets:
             principal: ec2.amazonaws.com
         policies:
           awsManaged:
+            # Use GovCloud equivalents; if names differ, LZA will map via partition
             - AmazonSSMManagedInstanceCore
-            - AmazonSSMDirectoryServiceAccess
             - CloudWatchAgentServerPolicy
       # This role is utilized by the Backup Plans defined in global-config.yaml
       # We create this role in every account where we plan to have Backup Plans
