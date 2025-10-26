@@ -2,7 +2,7 @@
 # have been created and enrolled as the accelerator will verify that the OU layout
 # matches before continuing to execute the deployment pipeline.
 
-enable: false
+enable: true
 organizationalUnits:
   - name: Security
   - name: Infrastructure
