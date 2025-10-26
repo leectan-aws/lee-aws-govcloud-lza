@@ -1,129 +1,66 @@
-#
-# AWS Landing Zone Accelerator - Organization Configuration
-# Account: 435520283566
-# Structure: Security-focused OU design
-#
+# If using AWS Control Tower, ensure that all the specified Organizational Units (OU)
+# have been created and enrolled as the accelerator will verify that the OU layout
+# matches before continuing to execute the deployment pipeline.
 
 enable: true
-
-# Organizational Units structure
 organizationalUnits:
   - name: Security
-    # Contains: LogArchive, Audit, Security accounts
-    # Purpose: Isolated security and logging services
-  
-  # Future OUs for workload expansion
   - name: Infrastructure
-    # Future: Network, shared services
-  
-  - name: Workloads
-    # Future: Dev, Staging, Prod accounts
-
-# Service Control Policies (SCPs)
-serviceControlPolicies:
-  # Deny leaving organization
-  - name: DenyLeaveOrganization
-    description: Prevent accounts from leaving the organization
-    policy: service-control-policies/deny-leave-organization.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Root
-  
-  # Deny modifying CloudTrail
-  - name: DenyModifyCloudTrail
-    description: Prevent modification or deletion of CloudTrail
-    policy: service-control-policies/deny-modify-cloudtrail.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Root
-  
-  # Deny disabling security services
-  - name: DenyDisableSecurityServices
-    description: Prevent disabling GuardDuty, SecurityHub, Config, Macie
-    policy: service-control-policies/deny-disable-security.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Root
-  
-  # Deny unencrypted S3 uploads
-  - name: DenyUnencryptedS3
-    description: Require encryption for all S3 uploads
-    policy: service-control-policies/deny-unencrypted-s3.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Root
-  
-  # Deny public S3 buckets
-  - name: DenyPublicS3Buckets
-    description: Prevent creation of public S3 buckets
-    policy: service-control-policies/deny-public-s3.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Root
-  
-  # Deny VPC modifications without approval
-  - name: DenyVPCModifications
-    description: Restrict VPC and network changes
-    policy: service-control-policies/deny-vpc-modifications.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Workloads
-        - Infrastructure
-  
-  # Require MFA for sensitive operations
-  - name: RequireMFA
-    description: Require MFA for IAM and sensitive operations
-    policy: service-control-policies/require-mfa.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Root
-  
-  # Deny root user access
-  - name: DenyRootUser
-    description: Deny root user access except for emergency break-glass
-    policy: service-control-policies/deny-root-user.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Workloads
-        - Infrastructure
-  
-  # Restrict regions to GovCloud only
-  - name: RestrictRegions
-    description: Restrict services to us-gov-east-1 and us-gov-west-1 only
-    policy: service-control-policies/restrict-regions.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Root
-
-# Tagging policies for governance
-taggingPolicies:
-  - name: RequiredTags
-    description: Require mandatory tags on all resources
-    policy: tagging-policies/required-tags.json
-    deploymentTargets:
-      organizationalUnits:
-        - Root
-
-# Backup policies
-backupPolicies:
-  - name: DailyBackup
-    description: Daily backups with 30-day retention
-    policy: backup-policies/daily-backup.json
-    deploymentTargets:
-      organizationalUnits:
-        - Workloads
-
-# Quarantine new accounts until configured
 quarantineNewAccounts:
   enable: true
   scpPolicyName: Quarantine
-
+serviceControlPolicies:
+  - name: AcceleratorGuardrails1
+    description: >
+      Accelerator GuardRails 1
+    policy: service-control-policies/guardrails-1.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Infrastructure
+        - Security
+  - name: AcceleratorGuardrails2
+    description: >
+      Accelerator GuardRails 2
+    policy: service-control-policies/guardrails-2.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Infrastructure
+        - Security
+  - name: AcceleratorGuardrails3
+    description: >
+      Accelerator GuardRails 3
+    policy: service-control-policies/guardrails-3.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits:
+        - Infrastructure
+  - name: Quarantine
+    description: >
+      This SCP is used to prevent changes to new accounts until the Accelerator
+      has been executed successfully.
+      This policy will be applied upon account creation if enabled.
+    policy: service-control-policies/quarantine.json
+    type: customerManaged
+    deploymentTargets:
+      organizationalUnits: []
+# https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html
+taggingPolicies:
+  - name: TagPolicy
+    description: Organization Tagging Policy
+    policy: tagging-policies/org-tag-policy.json
+    deploymentTargets:
+      organizationalUnits:
+        - Root
+# https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_backup.html
+# backup policies contain a `delete_after_days` value of 1095 days, or 3 years.  Before
+# enabling this policy, ensure that `delete_after_days` meets your organization's records retention
+# policies.  Similarly, ensure that `move_to_cold_storage_after_days` meets business requirements.
+backupPolicies:
+  - name: BackupPolicy
+    description: Organization Backup Policy
+    policy: backup-policies/backup-plan.json
+    deploymentTargets:
+      organizationalUnits:
+        - Root
