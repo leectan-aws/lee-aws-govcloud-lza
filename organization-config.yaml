@@ -2,49 +2,14 @@
 # have been created and enrolled as the accelerator will verify that the OU layout
 # matches before continuing to execute the deployment pipeline.
 
-enable: true
+enable: false
 organizationalUnits:
   - name: Security
   - name: Infrastructure
 quarantineNewAccounts:
-  enable: true
+  enable: false
   scpPolicyName: Quarantine
-serviceControlPolicies:
-  - name: AcceleratorGuardrails1
-    description: >
-      Accelerator GuardRails 1
-    policy: service-control-policies/guardrails-1.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Infrastructure
-        - Security
-  - name: AcceleratorGuardrails2
-    description: >
-      Accelerator GuardRails 2
-    policy: service-control-policies/guardrails-2.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Infrastructure
-        - Security
-  - name: AcceleratorGuardrails3
-    description: >
-      Accelerator GuardRails 3
-    policy: service-control-policies/guardrails-3.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits:
-        - Infrastructure
-  - name: Quarantine
-    description: >
-      This SCP is used to prevent changes to new accounts until the Accelerator
-      has been executed successfully.
-      This policy will be applied upon account creation if enabled.
-    policy: service-control-policies/quarantine.json
-    type: customerManaged
-    deploymentTargets:
-      organizationalUnits: []
+serviceControlPolicies: []
 # https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html
 taggingPolicies:
   - name: TagPolicy
