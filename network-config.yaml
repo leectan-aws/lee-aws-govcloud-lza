@@ -11,7 +11,10 @@ homeRegion: &HOME_REGION us-gov-east-1
 #####################################
 defaultVpc:
   delete: true
-  excludeAccounts: []
+  excludeAccounts:
+    - LogArchive
+    - Audit
+    - Security
 
 #####################################
 # Transit Gateways-- use this object #
@@ -22,8 +25,7 @@ transitGateways:
     account: Security
     region: *HOME_REGION
     shareTargets:
-      organizationalUnits:
-        - Infrastructure
+      organizationalUnits: []
     asn: 65521
     dnsSupport: enable
     vpnEcmpSupport: enable
@@ -58,7 +60,7 @@ endpointPolicies:
 #####################################
 vpcs:
   - name: Network-Endpoints
-    account: Security
+    account: Management
     region: *HOME_REGION
     cidrs:
       - 10.1.0.0/22
@@ -145,7 +147,7 @@ vpcs:
         - service: kms
         - service: logs
   - name: Network-Inspection
-    account: Security
+    account: Management
     region: *HOME_REGION
     cidrs:
       - 10.2.0.0/22
@@ -226,7 +228,7 @@ vpcs:
         - service: dynamodb
     useCentralEndpoints: true
   - name: SharedServices-Main
-    account: Security
+    account: Management
     region: *HOME_REGION
     cidrs:
       - 10.4.0.0/16
