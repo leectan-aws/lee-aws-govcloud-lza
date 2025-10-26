@@ -1,0 +1,45 @@
+{
+  "plans": {
+    "DailyBackup": {
+      "regions": {
+        "@@assign": ["us-gov-east-1", "us-gov-west-1"]
+      },
+      "rules": {
+        "DailyBackupRule": {
+          "schedule_expression": {
+            "@@assign": "cron(0 5 ? * * *)"
+          },
+          "start_backup_window_minutes": {
+            "@@assign": "60"
+          },
+          "complete_backup_window_minutes": {
+            "@@assign": "120"
+          },
+          "lifecycle": {
+            "delete_after_days": {
+              "@@assign": "30"
+            }
+          },
+          "target_backup_vault_name": {
+            "@@assign": "BackupVault"
+          }
+        }
+      },
+      "selections": {
+        "tags": {
+          "DailyBackupSelection": {
+            "iam_role_arn": {
+              "@@assign": "arn:aws-us-gov:iam::$account:role/service-role/AWSBackupDefaultServiceRole"
+            },
+            "tag_key": {
+              "@@assign": "backup"
+            },
+            "tag_value": {
+              "@@assign": ["daily"]
+            }
+          }
+        }
+      }
+    }
+  }
+}
