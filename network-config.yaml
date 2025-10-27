@@ -14,7 +14,6 @@ defaultVpc:
   excludeAccounts:
     - LogArchive
     - Audit
-    - Security
 
 #####################################
 # Transit Gateways-- use this object #
@@ -22,7 +21,7 @@ defaultVpc:
 #####################################
 transitGateways:
   - name: Network-Main
-    account: Security
+    account: Management
     region: *HOME_REGION
     shareTargets:
       organizationalUnits: []
@@ -118,7 +117,7 @@ vpcs:
       - name: Network-Endpoints
         transitGateway:
           name: Network-Main
-          account: Security
+          account: Management
         routeTableAssociations:
           - Network-Main-Shared
         routeTablePropagations:
@@ -209,7 +208,7 @@ vpcs:
       - name: Network-Inspection
         transitGateway:
           name: Network-Main
-          account: Security
+          account: Management
         options:
           applianceModeSupport: enable
         routeTableAssociations:
@@ -282,7 +281,7 @@ vpcs:
       - name: SharedServices-Main
         transitGateway:
           name: Network-Main
-          account: Security
+          account: Management
         routeTableAssociations:
           - Network-Main-Shared
         routeTablePropagations:
