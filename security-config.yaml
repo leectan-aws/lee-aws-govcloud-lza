@@ -11,7 +11,7 @@ centralSecurityServices:
   # Assigning delegated administrator to security tooling (Audit) account                                          #
   # https://docs.aws.amazon.com/prescriptive-guidance/latest/security-reference-architecture/security-tooling.html #
   ##################################################################################################################
-  delegatedAdminAccount: Management
+  delegatedAdminAccount: Audit
   ebsDefaultVolumeEncryption:
     enable: true
     excludeRegions: []
