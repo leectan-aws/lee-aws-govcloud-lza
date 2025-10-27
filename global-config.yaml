@@ -30,7 +30,7 @@ logging:
       managementEvents: true
       s3DataEvents: true
       lambdaDataEvents: true
-      sendToCloudWatchLogs: true
+      sendToCloudWatchLogs: false
       apiErrorRateInsight: false
       apiCallRateInsight: false
     accountTrails:
@@ -47,7 +47,7 @@ logging:
           managementEvents: true
           s3DataEvents: true
           lambdaDataEvents: true
-          sendToCloudWatchLogs: true
+          sendToCloudWatchLogs: false
           apiErrorRateInsight: false
           apiCallRateInsight: false
   sessionManager:
