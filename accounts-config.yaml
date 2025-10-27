@@ -4,18 +4,14 @@ mandatoryAccounts:
     email: leectan+govcloud@amazon.com
     organizationalUnit: Root
   - name: LogArchive
-    description: The log archive account (placeholder - using Management)
-    email: leectan+govcloud-logarchive@amazon.com
+    description: The log archive account (using Management)
+    email: leectan+govcloud@amazon.com  # Same as Management
     organizationalUnit: Root
   - name: Audit  
-    description: The security audit account (placeholder - using Management)
-    email: leectan+govcloud-audit@amazon.com
+    description: The security audit account (using Management)
+    email: leectan+govcloud@amazon.com  # Same as Management
     organizationalUnit: Root
 accountIds:
   - email: leectan+govcloud@amazon.com
-    accountId: "435520283566"
-  - email: leectan+govcloud-logarchive@amazon.com
-    accountId: "435520283566"
-  - email: leectan+govcloud-audit@amazon.com
     accountId: "435520283566"
 workloadAccounts: []
