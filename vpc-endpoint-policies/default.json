@@ -2,12 +2,14 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "AllowAll",
+      "Sid": "AllowSpecificActionsFromAccountRoot",
       "Effect": "Allow",
-      "Action": "*",
+      "Principal": { "AWS": "arn:aws-us-gov:iam::435520283566:root" },
+      "Action": [
+        "ec2:Describe*",
+        "ec2:Get*"
+      ],
       "Resource": "*"
     }
   ]
 }
-
-
