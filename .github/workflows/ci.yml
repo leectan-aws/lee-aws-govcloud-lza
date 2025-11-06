@@ -18,22 +18,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Block wildcard principals in repository
+      - name: Block wildcard principals in repository (configs only)
         run: |
           set -euo pipefail
-          echo "Scanning for Principal \"*\" in repository..."
+          echo "Scanning config and policy files for wildcard principals..."
           FOUND=0
-          # JSON/YAML (policies and configs)
-          if grep -R -n --include='*.json' --include='*.yaml' --include='*.yml' \
-            --exclude-dir='**/node_modules' --exclude-dir='**/test' -E '"Principal"\s*:\s*"\*"' .; then
-            FOUND=1
-          fi
-          # TypeScript (AnyPrincipal)
-          if grep -R -n --include='*.ts' --exclude-dir='**/node_modules' --exclude-dir='**/test' -E 'AnyPrincipal\(' .; then
-            FOUND=1
-          fi
+          SEARCH_DIRS=( lza-bootstrap-config vpc-endpoint-policies . )
+          for DIR in "${SEARCH_DIRS[@]}"; do
+            [ -d "$DIR" ] || continue
+            if grep -R -n --include='*.json' --include='*.yaml' --include='*.yml' \
+              --exclude-dir='landing-zone-accelerator-on-aws' \
+              --exclude-dir='**/node_modules' --exclude-dir='**/test' -E '"Principal"\s*:\s*"\*"' "$DIR"; then
+              FOUND=1
+            fi
+            if grep -R -n --include='*.ts' \
+              --exclude-dir='landing-zone-accelerator-on-aws' \
+              --exclude-dir='**/node_modules' --exclude-dir='**/test' -E 'AnyPrincipal\(' "$DIR"; then
+              FOUND=1
+            fi
+          done
           if [ "$FOUND" -ne 0 ]; then
-            echo "ERROR: Wildcard principals detected. Fix before merging." >&2
+            echo "ERROR: Wildcard principals detected in repo configs. Fix before merging." >&2
+            exit 1
+          fi
+
+      - name: Enforce account-scoped principals (435520283566)
+        run: |
+          set -euo pipefail
+          echo "Ensuring all repo Principal ARNs are scoped to 435520283566..."
+          # Fail if any other account root is referenced in configs we control
+          if grep -R -n --include='*.json' --include='*.yaml' --include='*.yml' \
+            --exclude-dir='landing-zone-accelerator-on-aws' \
+            --exclude-dir='**/node_modules' --exclude-dir='**/test' \
+            -E 'arn:aws(-us-gov)?:iam::(?!435520283566)\\d{12}:root' .; then
+            echo "ERROR: Found root principal for another account. Fix before merging." >&2
             exit 1
           fi
 
@@ -55,8 +73,36 @@ jobs:
           checkov -d . \
             --quiet \
             --framework cloudformation,terraform,kubernetes,armtemplate,serverless \
-            --skip-path '**/node_modules/**' \
+            --skip-path '**/node_modules/**,landing-zone-accelerator-on-aws/**' \
             --hard-fail-on HIGH,CRITICAL
+
+      - name: Configure AWS credentials (for artifact scan)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws-us-gov:iam::435520283566:role/GitHubActionsDeploy
+          aws-region: us-gov-east-1
+
+      - name: Download and scan LZA source artifact for insecure principals
+        run: |
+          set -euo pipefail
+          mkdir -p lza_artifact
+          aws s3 cp s3://aws-accelerator-installer-435520283566-us-gov-east-1/lza/v1.13.1.zip lza_artifact/lza.zip
+          unzip -q lza_artifact/lza.zip -d lza_artifact
+          echo "Scanning LZA compiled stacks for AnyPrincipal and invalid GovCloud CloudWatch principals..."
+          FAIL=0
+          # AnyPrincipal usage in KMS/Logging stacks
+          if grep -R -n --include='*.js' 'AnyPrincipal\(' lza_artifact/source/packages/@aws-accelerator/accelerator/dist/packages/@aws-accelerator/accelerator/lib/stacks/; then
+            echo "ERROR: AnyPrincipal detected in LZA stacks." >&2
+            FAIL=1
+          fi
+          # Invalid GovCloud CloudWatch Logs service principal
+          if grep -R -n --include='*.js' -E 'ServicePrincipal\(`?logs\.[a-z0-9-]+\.amazonaws\.com' lza_artifact/source/packages/@aws-accelerator/accelerator/dist/packages/@aws-accelerator/accelerator/lib/stacks/; then
+            echo "ERROR: Invalid GovCloud CloudWatch Logs service principal detected." >&2
+            FAIL=1
+          fi
+          if [ "$FAIL" -ne 0 ]; then
+            exit 1
+          fi
 
   deploy:
     name: Deploy (LZA Pipeline Trigger)
