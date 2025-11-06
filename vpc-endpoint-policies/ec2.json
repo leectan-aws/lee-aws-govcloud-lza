@@ -2,12 +2,14 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "AllowEC2",
+      "Sid": "AllowDescribeAndReadOnlyToAccountRoot",
       "Effect": "Allow",
-      "Action": "ec2:*",
+      "Principal": { "AWS": "arn:aws-us-gov:iam::435520283566:root" },
+      "Action": [
+        "ec2:Describe*",
+        "ec2:Get*"
+      ],
       "Resource": "*"
     }
   ]
 }
-
-
