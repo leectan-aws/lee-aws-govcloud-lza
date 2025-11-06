@@ -46,7 +46,6 @@ jobs:
         run: |
           set -euo pipefail
           echo "Ensuring all repo Principal ARNs are scoped to 435520283566..."
-          # Fail if any other account root is referenced in configs we control
           if grep -R -n --include='*.json' --include='*.yaml' --include='*.yml' \
             --exclude-dir='landing-zone-accelerator-on-aws' \
             --exclude-dir='**/node_modules' --exclude-dir='**/test' \
@@ -72,8 +71,9 @@ jobs:
           set -euo pipefail
           checkov -d . \
             --quiet \
-            --framework cloudformation,terraform,kubernetes,armtemplate,serverless \
-            --skip-path '**/node_modules/**,landing-zone-accelerator-on-aws/**' \
+            --framework cloudformation,terraform,kubernetes,arm,serverless \
+            --skip-path '**/node_modules/**' \
+            --skip-path 'landing-zone-accelerator-on-aws/**' \
             --hard-fail-on HIGH,CRITICAL
 
       - name: Configure AWS credentials (for artifact scan)
@@ -90,12 +90,10 @@ jobs:
           unzip -q lza_artifact/lza.zip -d lza_artifact
           echo "Scanning LZA compiled stacks for AnyPrincipal and invalid GovCloud CloudWatch principals..."
           FAIL=0
-          # AnyPrincipal usage in KMS/Logging stacks
           if grep -R -n --include='*.js' 'AnyPrincipal\(' lza_artifact/source/packages/@aws-accelerator/accelerator/dist/packages/@aws-accelerator/accelerator/lib/stacks/; then
             echo "ERROR: AnyPrincipal detected in LZA stacks." >&2
             FAIL=1
           fi
-          # Invalid GovCloud CloudWatch Logs service principal
           if grep -R -n --include='*.js' -E 'ServicePrincipal\(`?logs\.[a-z0-9-]+\.amazonaws\.com' lza_artifact/source/packages/@aws-accelerator/accelerator/dist/packages/@aws-accelerator/accelerator/lib/stacks/; then
             echo "ERROR: Invalid GovCloud CloudWatch Logs service principal detected." >&2
             FAIL=1
