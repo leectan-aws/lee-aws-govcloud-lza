@@ -5,7 +5,7 @@ enabledRegions:
 managementAccountAccessRole: OrganizationAccountAccessRole
 # Event bus policy removed for simplicity
 cloudwatchLogRetentionInDays: 3653
-terminationProtection: true
+terminationProtection: false
 cdkOptions:
   centralizeBuckets: true
   useManagementAccessRole: true
