@@ -4,14 +4,21 @@ mandatoryAccounts:
     email: leectan+govcloud@amazon.com
     organizationalUnit: Root
   - name: LogArchive
-    description: The log archive account (using Management)
-    email: leectan+govcloud@amazon.com  # Same as Management
-    organizationalUnit: Root
-  - name: Audit  
-    description: The security audit account (using Management)
-    email: leectan+govcloud@amazon.com  # Same as Management
-    organizationalUnit: Root
+    description: The log archive account
+    email: leectan+govcloud-logarchive@amazon.com
+    organizationalUnit: Security
+  - name: Audit
+    description: The security audit account
+    email: leectan+govcloud-audit@amazon.com
+    organizationalUnit: Security
 accountIds:
   - email: leectan+govcloud@amazon.com
     accountId: "435520283566"
-workloadAccounts: []
+  # LogArchive and Audit accounts will be created by LZA
+  # Their account IDs will be auto-populated after creation
+workloadAccounts:
+  # Defer Security account until it exists
+  # - name: Security
+  #   description: Additional security services account
+  #   email: leectan+govcloud-security@amazon.com
+  #   organizationalUnit: Security
