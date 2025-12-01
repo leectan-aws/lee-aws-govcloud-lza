@@ -22,18 +22,18 @@ centralSecurityServices:
     enable: true
     snsTopicName: Security
   macie:
-    enable: true
+    enable: false  # DISABLED - Service principal macie.amazonaws.com is invalid in GovCloud KMS policies
     excludeRegions: []
     policyFindingsPublishingFrequency: FIFTEEN_MINUTES
     publishSensitiveDataFindings: true
   guardduty:
-    enable: true
+    enable: false  # DISABLED - Service principal guardduty.amazonaws.com is invalid in GovCloud KMS policies
     excludeRegions: []
     s3Protection:
-      enable: true
+      enable: false
       excludeRegions: []
     exportConfiguration:
-      enable: true
+      enable: false
       overrideExisting: true
       destinationType: S3
       exportFrequency: FIFTEEN_MINUTES
