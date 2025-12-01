@@ -4,13 +4,13 @@ mandatoryAccounts:
     email: leectan+govcloud@amazon.com
     organizationalUnit: Root
   - name: LogArchive
-    description: The log archive account
-    email: leectan+govcloud-logarchive@amazon.com
-    organizationalUnit: Security
+    description: The log archive account (same as Management in single-account mode)
+    email: leectan+govcloud@amazon.com
+    organizationalUnit: Root
   - name: Audit
-    description: The security audit account
-    email: leectan+govcloud-audit@amazon.com
-    organizationalUnit: Security
+    description: The security audit account (same as Management in single-account mode)
+    email: leectan+govcloud@amazon.com
+    organizationalUnit: Root
 accountIds:
   - email: leectan+govcloud@amazon.com
     accountId: "435520283566"
