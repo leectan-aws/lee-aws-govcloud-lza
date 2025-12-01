@@ -14,11 +14,4 @@ mandatoryAccounts:
 accountIds:
   - email: leectan+govcloud@amazon.com
     accountId: "435520283566"
-  # LogArchive and Audit accounts will be created by LZA
-  # Their account IDs will be auto-populated after creation
-workloadAccounts:
-  # Defer Security account until it exists
-  # - name: Security
-  #   description: Additional security services account
-  #   email: leectan+govcloud-security@amazon.com
-  #   organizationalUnit: Security
+workloadAccounts: []
