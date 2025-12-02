@@ -22,12 +22,12 @@ centralSecurityServices:
     enable: true
     snsTopicName: Security
   macie:
-    enable: false  # DISABLED - Service principal macie.amazonaws.com is invalid in GovCloud KMS policies
+    enable: false  # DISABLED for initial deployment - LZA bucket.ts needs to be modified to skip KMS grants for GovCloud
     excludeRegions: []
     policyFindingsPublishingFrequency: FIFTEEN_MINUTES
     publishSensitiveDataFindings: true
   guardduty:
-    enable: false  # DISABLED - Service principal guardduty.amazonaws.com is invalid in GovCloud KMS policies
+    enable: false  # DISABLED for initial deployment - LZA bucket.ts needs to be modified to skip KMS grants for GovCloud
     excludeRegions: []
     s3Protection:
       enable: false
