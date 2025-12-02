@@ -64,10 +64,8 @@ logging:
     # dynamic partitioning is not supported in GovCloud
     # dynamicPartitioning: dynamic-partitioning/log-filters.json
     # dataProtection DISABLED - CloudWatch Data Protection Policy is NOT supported in AWS GovCloud
-    # dataProtection:
-    #   managedDataIdentifiers:
-    #     categories:
-    #       - Credentials
+    # Using empty exclusions object to satisfy YAML schema requirement
+    exclusions: []
   accessLogBucket:
     lifecycleRules:
       - enabled: true
