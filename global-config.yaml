@@ -5,7 +5,7 @@ enabledRegions:
 managementAccountAccessRole: OrganizationAccountAccessRole
 # Event bus policy removed for simplicity
 cloudwatchLogRetentionInDays: 3653
-terminationProtection: false
+terminationProtection: true
 cdkOptions:
   centralizeBuckets: true
   useManagementAccessRole: true
@@ -30,7 +30,7 @@ logging:
       managementEvents: true
       s3DataEvents: true
       lambdaDataEvents: true
-      sendToCloudWatchLogs: false
+      sendToCloudWatchLogs: true
       apiErrorRateInsight: false
       apiCallRateInsight: false
     accountTrails:
@@ -47,7 +47,7 @@ logging:
           managementEvents: true
           s3DataEvents: true
           lambdaDataEvents: true
-          sendToCloudWatchLogs: false
+          sendToCloudWatchLogs: true
           apiErrorRateInsight: false
           apiCallRateInsight: false
   sessionManager:
@@ -63,10 +63,11 @@ logging:
   cloudwatchLogs:
     # dynamic partitioning is not supported in GovCloud
     # dynamicPartitioning: dynamic-partitioning/log-filters.json
-    dataProtection: 
-      managedDataIdentifiers:
-        categories:
-          - Credentials
+    # dataProtection DISABLED - CloudWatch Data Protection Policy is NOT supported in AWS GovCloud
+    # dataProtection:
+    #   managedDataIdentifiers:
+    #     categories:
+    #       - Credentials
   accessLogBucket:
     lifecycleRules:
       - enabled: true
